@@ -1,0 +1,30 @@
+Movie for comparison of bd vs gfrd for opening new buiding Amolf.
+2010-03-14
+
+=== GFRD
+Number of K = 120.442734
+Number of KK = 60.221367
+Number of P = 0.0
+BasicPairGreensFunction: Rn didn't converge.
+BasicPairGreensFunction: Rn didn't converge.
+BasicPairGreensFunction: Rn didn't converge.
+BasicPairGreensFunction: Rn didn't converge.
+BasicPairGreensFunction: Rn didn't converge.
+counter =  300
+
+t = 8.11823
+steps = 12094619 
+        Single: 11488159        (escape: 11487774, reaction: 385)
+        Pair:   352160  (escape r: 56064, R: 295538, reaction pair: 352, single: 206)
+        Multi:  254300  (escape: 14051, reaction: 4)
+total reactions = 947
+rejected moves = 0
+
+=== BD
+Number of K = 120.442734
+Number of KK = 60.221367
+Number of P = 0.0
+counter =  300
+simulation time: 4.1215875e-05
+number of steps: 329727
+bd.dt: 1.25e-10
