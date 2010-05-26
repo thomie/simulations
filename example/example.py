@@ -2,10 +2,10 @@
 
 '''
 Running this script to test if everything works:
-PYTHONPATH=../../ python alternative-user-interface.py
+PYTHONPATH=../../egfrd python example.py
 
 or, without terminal output and faster:
-PYTHONPATH=../../ python -O alternative-user-interface.py
+PYTHONPATH=../../egfrd python -O example.py
 '''
 
 from egfrd import *
@@ -24,10 +24,9 @@ C      -> 0
 '''Settings.
 
 '''
-ALTERNATIVE_USER_INTERFACE = True
+ALTERNATIVE_USER_INTERFACE = False
 
 # Make multis run 'BD_DT_FACTOR' times faster than normal.
-
 BD_DT_FACTOR = 1
 RADIUS_FACTOR = 1
 SINGLE_RATE_FACTOR = 1
@@ -35,13 +34,13 @@ PAIR_RATE_FACTOR = 1
 
 WORLD = True
 MEMBRANE1 = True
-MEMBRANE2 = False
-DNA = False
+MEMBRANE2 = False # Todo.
+DNA = True
 
 DECAY = True
 
 VTK_LOGGER = True
-LOGGER = False
+LOGGER = False # Todo.
 
 MY_SEED = 0
 myrandom.seed(MY_SEED)
@@ -51,8 +50,8 @@ def run():
     '''Dimensions.
 
     '''
-    L = 1e-6            # Size of simulation box.
-    D = 1e-12           # Diffusion constant.
+    L = 1e-6                        # Size of simulation box.
+    D = 1e-12                       # Diffusion constant.
     radius = RADIUS_FACTOR * 2.5e-9 # Radius of particles and surfaces.
     thickness = radius
 
@@ -94,29 +93,29 @@ def run():
 
     '''
     if MEMBRANE1:
-        m1 = model.addPlanarSurface(origin=[L/2, L/2, 2*L/10],
-                                    vectorX=[1, 0, 0],
-                                    vectorY=[0, 1, 0],
-                                    Lx=L/2,
-                                    Ly=L/2,
-                                    Lz=thickness,
-                                    name='m1')
+        m1 = model.add_planar_surface(origin=[L/2, L/2, 2*L/10],
+                                      vector_x=[1, 0, 0],
+                                      vector_y=[0, 1, 0],
+                                      Lx=L/2,
+                                      Ly=L/2,
+                                      Lz=thickness,
+                                      name='m1')
 
     if MEMBRANE2:
-        m2 = model.addPlanarSurface(origin=[L/2, L/2, 8*L/10],
-                                    vectorX=[1, 0, 0], 
-                                    vectorY=[0, 1, 0],
-                                    Lx=L/2,
-                                    Ly=L/2,
-                                    Lz=thickness,
-                                    name='m2')
+        m2 = model.add_planar_surface(origin=[L/2, L/2, 8*L/10],
+                                      vector_x=[1, 0, 0],
+                                      vector_y=[0, 1, 0],
+                                      Lx=L/2,
+                                      Ly=L/2,
+                                      Lz=thickness,
+                                      name='m2')
 
     if DNA:
-        d = model.addCylindricalSurface(origin=[L/2, L/2, L/2],
-                                        radius=radius,
-                                        orientation=[0, 1, 0],
-                                        size=L/2,
-                                        name='d')
+        d = model.add_cylindrical_surface(origin=[L/2, L/2, L/2],
+                                          radius=radius,
+                                          orientation=[0, 1, 0],
+                                          size=L/2,
+                                          name='d')
 
 
     '''Define species.
@@ -139,7 +138,7 @@ def run():
     '''Add species to 3D.
 
     Alternative user interface:
-        model.addSpecies(species)
+        model.add_species(species)
 
     When adding a species to the model without explicitly assigning the 
     surface it can live on, it is assumed to be in the 'world'. The 'world' is 
@@ -148,16 +147,16 @@ def run():
     '''
     if WORLD:
         if ALTERNATIVE_USER_INTERFACE == True:
-            model.addSpecies(A)
-            model.addSpecies(B)
-            model.addSpecies(C)
+            model.add_species(A)
+            model.add_species(B)
+            model.add_species(C)
         else:
             A = model.new_species_type('A', D, radius)
-            A['surface'] = model.defaultSurface.name
+            A['surface'] = model.default_surface.name
             B = model.new_species_type('B', D, radius)
-            B['surface'] = model.defaultSurface.name
+            B['surface'] = model.default_surface.name
             C = model.new_species_type('C', D, radius)
-            C['surface'] = model.defaultSurface.name
+            C['surface'] = model.default_surface.name
 
 
     '''Add species to surfaces.
@@ -165,7 +164,7 @@ def run():
     Specify which species can exist on which surface.
 
     Alternative user interface:
-        model.addSpecies(species, surface, D, radius)
+        model.add_species(species, surface, D, radius)
     See the docstring.
 
     Per surface a different diffusion constant D and radius can be specified. 
@@ -178,9 +177,9 @@ def run():
     '''
     if MEMBRANE1:
         if ALTERNATIVE_USER_INTERFACE == True:
-            model.addSpecies(A, m1)
-            model.addSpecies(B, m1)
-            model.addSpecies(C, m1)
+            model.add_species(A, m1)
+            model.add_species(B, m1)
+            model.add_species(C, m1)
         else:
             Am1 = model.new_species_type('Am1', D, radius)
             Am1['surface'] = m1.name
@@ -195,9 +194,9 @@ def run():
 
     if DNA:
         if ALTERNATIVE_USER_INTERFACE == True:
-            model.addSpecies(A, d)
-            model.addSpecies(B, d)
-            model.addSpecies(C, d)
+            model.add_species(A, d)
+            model.add_species(B, d)
+            model.add_species(C, d)
         else:
             Ad = model.new_species_type('Ad', D, radius)
             Ad['surface'] = d.name
@@ -210,7 +209,7 @@ def run():
     '''Add reactions in 3D.
 
     Alternative user interface:
-        model.addReaction([reactants], [products], rate)
+        model.add_reaction([reactants], [products], rate)
 
     For now: a bimolecular reaction can only have 1 product species.
 
@@ -227,34 +226,34 @@ def run():
 
     if WORLD:
         if ALTERNATIVE_USER_INTERFACE == True:
-            model.addReaction([A],    [B],    kf_1)
-            model.addReaction([B],    [A],    kb_1)
-            model.addReaction([A, B], [C],    kf_2)
-            model.addReaction([C],    [A, B], kb_2)
+            model.add_reaction([A],    [B],    kf_1)
+            model.add_reaction([B],    [A],    kb_1)
+            model.add_reaction([A, B], [C],    kf_2)
+            model.add_reaction([C],    [A, B], kb_2)
             if DECAY:
-                model.addReaction([C], [], kf_1)
+                model.add_reaction([C], [], kf_1)
         else:
-            r1 = createUnimolecularReactionRule(A, B, kf_1)
+            r1 = create_unimolecular_reaction_rule(A, B, kf_1)
             model.network_rules.add_reaction_rule(r1)
 
-            r2 = createUnimolecularReactionRule(B, A, kb_1)
+            r2 = create_unimolecular_reaction_rule(B, A, kb_1)
             model.network_rules.add_reaction_rule(r2)
 
-            r3 = createBindingReactionRule(A, B, C, kf_2)
+            r3 = create_binding_reaction_rule(A, B, C, kf_2)
             model.network_rules.add_reaction_rule(r3)
 
-            r4 = createUnbindingReactionRule(C, A, B, kb_2)
+            r4 = create_unbinding_reaction_rule(C, A, B, kb_2)
             model.network_rules.add_reaction_rule(r4)
 
             if DECAY:
-                r5 = createDecayReactionRule(C, kf_1)
+                r5 = create_decay_reaction_rule(C, kf_1)
                 model.network_rules.add_reaction_rule(r5)
 
 
     '''Add reactions on surfaces.
 
     Alternative user interface:
-        model.addReaction([reactants], [products], rate)
+        model.add_reaction([reactants], [products], rate)
     , where one reactant or product is a tuple: (species, surface).
 
     Combinations of species which do not appear together as reactants in any 
@@ -263,27 +262,27 @@ def run():
     '''
     if MEMBRANE1:
         if ALTERNATIVE_USER_INTERFACE == True:
-            model.addReaction([(A, m1)],          [(B, m1)],          kf_1)
-            model.addReaction([(B, m1)],          [(A, m1)],          kb_1)
-            model.addReaction([(A, m1), (B, m1)], [(C, m1)],          kf_2)
-            model.addReaction([(C, m1)],          [(A, m1), (B, m1)], kb_2)
+            model.add_reaction([(A, m1)],          [(B, m1)],          kf_1)
+            model.add_reaction([(B, m1)],          [(A, m1)],          kb_1)
+            model.add_reaction([(A, m1), (B, m1)], [(C, m1)],          kf_2)
+            model.add_reaction([(C, m1)],          [(A, m1), (B, m1)], kb_2)
             if DECAY:
-                model.addReaction([(C, m1)], [], kf_1)
+                model.add_reaction([(C, m1)], [], kf_1)
         else:
-            r1 = createUnimolecularReactionRule(Am1, Bm1, kf_1)
+            r1 = create_unimolecular_reaction_rule(Am1, Bm1, kf_1)
             model.network_rules.add_reaction_rule(r1)
 
-            r2 = createUnimolecularReactionRule(Bm1, Am1, kb_1)
+            r2 = create_unimolecular_reaction_rule(Bm1, Am1, kb_1)
             model.network_rules.add_reaction_rule(r2)
 
-            r3 = createBindingReactionRule(Am1, Bm1, Cm1, kf_2)
+            r3 = create_binding_reaction_rule(Am1, Bm1, Cm1, kf_2)
             model.network_rules.add_reaction_rule(r3)
 
-            r4 = createUnbindingReactionRule(Cm1, Am1, Bm1, kb_2)
+            r4 = create_unbinding_reaction_rule(Cm1, Am1, Bm1, kb_2)
             model.network_rules.add_reaction_rule(r4)
 
             if DECAY:
-                r5 = createDecayReactionRule(Cm1, kf_1)
+                r5 = create_decay_reaction_rule(Cm1, kf_1)
                 model.network_rules.add_reaction_rule(r5)
 
     if MEMBRANE2:
@@ -292,34 +291,34 @@ def run():
 
     if DNA:
         if ALTERNATIVE_USER_INTERFACE == True:
-            model.addReaction([(A, d)],         [(B, d)],         kf_1)
-            model.addReaction([(B, d)],         [(A, d)],         kb_1)
-            model.addReaction([(A, d), (B, d)], [(C, d)],         kf_2)
-            model.addReaction([(C, d)],         [(A, d), (B, d)], kb_2)
+            model.add_reaction([(A, d)],         [(B, d)],         kf_1)
+            model.add_reaction([(B, d)],         [(A, d)],         kb_1)
+            model.add_reaction([(A, d), (B, d)], [(C, d)],         kf_2)
+            model.add_reaction([(C, d)],         [(A, d), (B, d)], kb_2)
             if DECAY:
-                model.addReaction([(C, d)], [], kf_1)
+                model.add_reaction([(C, d)], [], kf_1)
         else:
-            r1 = createUnimolecularReactionRule(Ad, Bd, kf_1)
+            r1 = create_unimolecular_reaction_rule(Ad, Bd, kf_1)
             model.network_rules.add_reaction_rule(r1)
 
-            r2 = createUnimolecularReactionRule(Bd, Ad, kb_1)
+            r2 = create_unimolecular_reaction_rule(Bd, Ad, kb_1)
             model.network_rules.add_reaction_rule(r2)
 
-            r3 = createBindingReactionRule(Ad, Bd, Cd, kf_2)
+            r3 = create_binding_reaction_rule(Ad, Bd, Cd, kf_2)
             model.network_rules.add_reaction_rule(r3)
 
-            r4 = createUnbindingReactionRule(Cd, Ad, Bd, kb_2)
+            r4 = create_unbinding_reaction_rule(Cd, Ad, Bd, kb_2)
             model.network_rules.add_reaction_rule(r4)
 
             if DECAY:
-                r5 = createDecayReactionRule(Cd, kf_1)
+                r5 = create_decay_reaction_rule(Cd, kf_1)
                 model.network_rules.add_reaction_rule(r5)
 
 
     ''' Surface binding reactions.
 
     Alternative user interface:
-        model.addReaction([reactant], [product], rate))
+        model.add_reaction([reactant], [product], rate))
     , where product is a tuple: (species, surface).
 
     The reactant species for every surface binding reaction is always a 
@@ -339,16 +338,16 @@ def run():
         if ALTERNATIVE_USER_INTERFACE == True:
             # Species C can bind to the membrane. The membrane is reflective, 
             # by default, to species A and B.
-            model.addReaction([C], [(C, m1)], kon)
+            model.add_reaction([C], [(C, m1)], kon)
         else:
             pass
 
     if MEMBRANE2 and WORLD:
         if ALTERNATIVE_USER_INTERFACE == True:
             # Membrane 2 absorbs all particles.
-            model.addReaction([A], [(0, m2)], kon)
-            model.addReaction([B], [(0, m2)], kon)
-            model.addReaction([C], [(0, m2)], kon)
+            model.add_reaction([A], [(0, m2)], kon)
+            model.add_reaction([B], [(0, m2)], kon)
+            model.add_reaction([C], [(0, m2)], kon)
             pass
         else:
             pass
@@ -357,7 +356,7 @@ def run():
         if ALTERNATIVE_USER_INTERFACE == True:
             # Species C can bind to the dna. The dna is reflective, by 
             # default, to species A and B.
-            model.addReaction([C], [(C, d)], kon)
+            model.add_reaction([C], [(C, d)], kon)
         else:
             pass
 
@@ -365,7 +364,7 @@ def run():
     ''' Surface unbinding reactions.
 
     Alternative user interface:
-        model.addReaction([reactant], [product], k))
+        model.add_reaction([reactant], [product], k))
     , where reactant is a tuple: (species, surface).
 
     Unbinding is a Poissonian reaction, from a surface to the 'world'.
@@ -381,7 +380,7 @@ def run():
     if MEMBRANE1 and WORLD:
         if ALTERNATIVE_USER_INTERFACE == True:
             # Species C can unbind to the 'world'.
-            model.addReaction([(C, m1)], [C], koff)
+            model.add_reaction([(C, m1)], [C], koff)
         else:
             pass
 
@@ -395,7 +394,7 @@ def run():
     if DNA and WORLD:
         if ALTERNATIVE_USER_INTERFACE == True:
             # Species C can unbind to the 'world'.
-            model.addReaction([(C, d)], [C], koff)
+            model.add_reaction([(C, d)], [C], koff)
         else:
             pass
 
@@ -405,7 +404,7 @@ def run():
 
     '''
     model.set_all_repulsive()
-    s.setModel(model)
+    s.set_model(model)
 
 
     '''Add particles.
@@ -416,36 +415,36 @@ def run():
             # Add world particles inside the two planes.
             # Note that a CuboidalRegion is defined by 2 corners.
             box1 = CuboidalRegion([0, 0, 2 * L / 10], [L, L, 8 * L / 10])
-            s.throwInParticles(C, 4, box1)
-            s.throwInParticles(C, 4, box1)
-            s.throwInParticles(C, 16, box1)
+            s.throw_in_particles(C, 4, box1)
+            s.throw_in_particles(C, 4, box1)
+            s.throw_in_particles(C, 16, box1)
         else:
             # Particles are added to world (3D) by default.
-            s.throwInParticles(A, 4)
-            s.throwInParticles(B, 4)
-            s.throwInParticles(C, 16)
+            s.throw_in_particles(A, 4)
+            s.throw_in_particles(B, 4)
+            s.throw_in_particles(C, 16)
 
     if MEMBRANE1:
         if ALTERNATIVE_USER_INTERFACE == True:
-            s.throwInParticles(A, 2, m1)
-            s.throwInParticles(B, 2, m1)
-            s.throwInParticles(C, 8, m1)
+            s.throw_in_particles(A, 2, m1)
+            s.throw_in_particles(B, 2, m1)
+            s.throw_in_particles(C, 8, m1)
         else:
-            s.throwInParticles(Am1, 2)
-            s.throwInParticles(Bm1, 2)
-            s.throwInParticles(Cm1, 8)
+            s.throw_in_particles(Am1, 2)
+            s.throw_in_particles(Bm1, 2)
+            s.throw_in_particles(Cm1, 8)
 
     if MEMBRANE2: pass
 
     if DNA:
         if ALTERNATIVE_USER_INTERFACE == True:
-            s.throwInParticles(A, 1, d)
-            s.throwInParticles(B, 1, d)
-            s.throwInParticles(C, 4, d)
+            s.throw_in_particles(A, 1, d)
+            s.throw_in_particles(B, 1, d)
+            s.throw_in_particles(C, 4, d)
         else:
-            s.throwInParticles(Ad, 1)
-            s.throwInParticles(Bd, 1)
-            s.throwInParticles(Cd, 4)
+            s.throw_in_particles(Ad, 1)
+            s.throw_in_particles(Bd, 1)
+            s.throw_in_particles(Cd, 4)
 
 
     '''Define loggers.
@@ -460,9 +459,10 @@ def run():
         from logger import Logger
         # Write log files. See logger.py. Use visualizer.py to visualize.
         l = Logger(s, 'example')
-        l.setParticleOutInterval(1e-4) #1e-3)
+        #l.set_particle_out_interval(1e-4) #1e-3)
 
-    print s.dump_reaction_rules()
+    # Todo.
+    #print s.dump_reaction_rules()
 
 
     '''Run  simulation.
@@ -487,7 +487,7 @@ def run():
     if VTK_LOGGER == True:
         vtklogger.stop()
 
-    '''Todo: add test for this stuff.
+    #Todo: add test for this stuff.
     s.print_report()
     for x in dump_domains(s):
         print x
@@ -497,7 +497,6 @@ def run():
             print y
     for x in dump_particles(s):
         print x
-    '''
     s.stop(s.t)
     
 if __name__ == '__main__':
