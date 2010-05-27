@@ -2,6 +2,7 @@
 
 
 from egfrd import *
+from model2 import *
 
 from logger import *
 #from vtklogger import VTKLogger
@@ -57,8 +58,7 @@ def run( ):
     radius = 1.7e-9      # Radius of particles.
 
 
-    s = EGFRDSimulator( worldSize=L )
-
+    m = ParticleModel(L)
 
     WORLD = True
     MEMBRANE = True
@@ -66,14 +66,14 @@ def run( ):
 
     if MEMBRANE:
 
-        m = s.addPlanarSurface( origin=[ L / 2, L / 2, L / 2 ],
-                                vectorX=[ 1, 0, 0 ],
-                                vectorY=[ 0, 1, 0 ],
-                                Lx=(L / 2),
-                                Ly=(L / 2),
-#                                Lz=(L / 2),
-                                Lz=(radius),
-                                name='m' )
+        m1 = m.add_planar_surface(id='m1',
+                                  origin=[L/2, L/2, L/2 ],
+                                  unit_x=[1, 0, 0],
+                                  unit_y=[0, 1, 0],
+                                  Lx=(L / 2),
+                                  Ly=(L / 2))
+#                                 Lz=(L / 2),
+#                                 Lz=(radius),
 
 
     RasD    = Species( 'RasD',    D, radius )
@@ -91,17 +91,17 @@ def run( ):
 
        
     if MEMBRANE:
-        s.addSpecies( RasD,    m )
-        s.addSpecies( RasT,    m )
-        s.addSpecies( Sos,     m )
-        s.addSpecies( SosD,    m )
-        s.addSpecies( SosT,    m )
-        s.addSpecies( SosDD,   m )
-        s.addSpecies( SosDT,   m )
-        s.addSpecies( SosTD,   m )
-        s.addSpecies( SosTT,   m )
-        s.addSpecies( GAP,     m )
-        s.addSpecies( RasTGAP, m )
+        m.add_species(RasD,    m1)
+        m.add_species(RasT,    m1)
+        m.add_species(Sos,     m1)
+        m.add_species(SosD,    m1)
+        m.add_species(SosT,    m1)
+        m.add_species(SosDD,   m1)
+        m.add_species(SosDT,   m1)
+        m.add_species(SosTD,   m1)
+        m.add_species(SosTT,   m1)
+        m.add_species(GAP,     m1)
+        m.add_species(RasTGAP, m1)
         
 
 
@@ -144,21 +144,22 @@ def run( ):
     k5d   = k_d( km5, k5, kD )   
 
     if MEMBRANE:
-
-        s.addReaction( [ (Sos, m), (RasD, m)   ], [ (SosD, m)            ], k1a    )
-#        s.addReaction( [ (SosD, m)             ], [ (Sos, m), (RasT, m)  ], k1d   )
-        s.addReaction( [ (SosD, m)             ], [ (Sos, m), (RasD, m)  ], k1d   )
-        s.addReaction( [ (Sos, m), (RasT, m)   ], [ (SosT, m)            ], k2a    )
-        s.addReaction( [ (SosT, m)             ], [ (Sos, m), (RasT, m)  ], k2d   )
-        s.addReaction( [ (SosT, m), (RasD, m)  ], [ (SosTD, m)           ], k3a    )
-        s.addReaction( [ (SosTD, m)            ], [ (SosT, m), (RasD, m) ], k3d   )
-        s.addReaction( [ (SosTD, m)            ], [ (SosT, m), (RasT, m) ], k3cat )
-        s.addReaction( [ (SosD, m), (RasD, m)  ], [ (SosDD, m)           ], k4a    )
-        s.addReaction( [ (SosDD, m)            ], [ (SosD, m), (RasD, m) ], k4d   )
-        s.addReaction( [ (SosDD, m)            ], [ (SosD, m), (RasT, m) ], k4cat )
-        s.addReaction( [ (RasT, m), (GAP, m)   ], [ (RasTGAP, m)         ], k5a    )
-        s.addReaction( [ (RasTGAP, m)          ], [ (RasT, m), (GAP, m)  ], k5d   )
-        s.addReaction( [ (RasTGAP, m)          ], [ (RasD, m), (GAP, m)  ], k5cat )
+        
+        m.add_reaction([(Sos, m1), (RasD, m1) ], [(SosD, m1)            ], k1a  )
+#       m.add_reaction([(SosD, m1)            ], [(Sos, m1), (RasT, m1)  ], 
+#       k1d          )
+        m.add_reaction([(SosD, m1)            ], [(Sos, m1), (RasD, m1) ], k1d  )
+        m.add_reaction([(Sos, m1), (RasT, m1) ], [(SosT, m1)            ], k2a  )
+        m.add_reaction([(SosT, m1)            ], [(Sos, m1), (RasT, m1) ], k2d  )
+        m.add_reaction([(SosT, m1), (RasD, m1)], [(SosTD, m1)           ], k3a  )
+        m.add_reaction([(SosTD, m1)           ], [(SosT, m1), (RasD, m1)], k3d  )
+        m.add_reaction([(SosTD, m1)           ], [(SosT, m1), (RasT, m1)], k3cat)
+        m.add_reaction([(SosD, m1), (RasD, m1)], [(SosDD, m1)           ], k4a  )
+        m.add_reaction([(SosDD, m1)           ], [(SosD, m1), (RasD, m1)], k4d  )
+        m.add_reaction([(SosDD, m1)           ], [(SosD, m1), (RasT, m1)], k4cat)
+        m.add_reaction([(RasT, m1), (GAP, m1) ], [(RasTGAP, m1)         ], k5a  )
+        m.add_reaction([(RasTGAP, m1)         ], [(RasT, m1), (GAP, m1) ], k5d  )
+        m.add_reaction([(RasTGAP, m1)         ], [(RasD, m1), (GAP, m1) ], k5cat)
 
 
 
@@ -201,18 +202,23 @@ def run( ):
     '''
 
 
+    matrix_size = 3
+    w = create_world(m, matrix_size)
+    nrw = NetworkRulesWrapper(m.network_rules)
+    s = EGFRDSimulator(w, myrandom.rng, nrw)
+
 
     if MEMBRANE: 
-        s.throwInParticles( Sos,  100, m )  
-        s.throwInParticles( RasD,  50, m )
-        s.throwInParticles( RasT,  50, m )
-        # s.throwInParticles( GAP,  100, m ) 
+        throw_in(s.world, Sos,  100, m1)  
+        throw_in(s.world, RasD,  50, m1)
+        throw_in(s.world, RasT,  50, m1)
+        #throw_in(s.world, GAP,  100, m1) 
 
 
 
 
     s.initialize()
-    print s.dumpReactions()
+    print s.dump_reaction_rules()
 
 
 
