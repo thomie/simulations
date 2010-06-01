@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 '''
-Running this script to test if everything works:
+To run this script:
 PYTHONPATH=../../egfrd python example.py
 
 or, without terminal output and faster:
@@ -21,9 +21,26 @@ C      -> 0
 '''
 
 
+WORLD                      = None
+MEMBRANE1                  = None
+MEMBRANE2                  = None
+DNA                        = None
+DECAY                      = None
+VTK_LOGGER                 = None
+LOGGER                     = None
+ALTERNATIVE_USER_INTERFACE = None
+
+
 '''Settings.
 
 '''
+WORLD                      = True
+MEMBRANE1                  = True
+#MEMBRANE2                  = True # Todo. But first fix interactions.
+DNA                        = True
+DECAY                      = True
+VTK_LOGGER                 = True
+#LOGGER                     = True # Todo.
 ALTERNATIVE_USER_INTERFACE = True
 
 if ALTERNATIVE_USER_INTERFACE == True:
@@ -36,16 +53,7 @@ BD_DT_FACTOR = 1
 RADIUS_FACTOR = 1
 SINGLE_RATE_FACTOR = 1
 PAIR_RATE_FACTOR = 1
-
-WORLD = True
-MEMBRANE1 = False
-MEMBRANE2 = False # Todo. But first fix interactions.
-DNA = False
-
-DECAY = False
-
-VTK_LOGGER = False
-LOGGER = False # Todo.
+N_PARTICLES_FACTOR = 0.6
 
 MY_SEED = 0
 myrandom.seed(MY_SEED)
@@ -400,7 +408,6 @@ def run():
 
     '''
     matrix_size = 3
-    m.set_all_repulsive()
     w = create_world(m, matrix_size)
     nrw = NetworkRulesWrapper(m.network_rules)
     s = EGFRDSimulator(w, myrandom.rng, nrw)
@@ -412,45 +419,45 @@ def run():
     '''
     if WORLD:
         if ALTERNATIVE_USER_INTERFACE == True:
-            throw_in(s.world, A, 4)
-            throw_in(s.world, B, 4)
-            throw_in(s.world, C, 16)
+            throw_in(s.world, A, N_PARTICLES_FACTOR * 4)
+            throw_in(s.world, B, N_PARTICLES_FACTOR * 4)
+            throw_in(s.world, C, N_PARTICLES_FACTOR * 16)
         else:
             # Particles are added to world (3D) by default.
-            throw_in_particles(s.world, A, 4)
-            throw_in_particles(s.world, B, 4)
-            throw_in_particles(s.world, C, 16)
+            throw_in_particles(s.world, A, N_PARTICLES_FACTOR * 4)
+            throw_in_particles(s.world, B, N_PARTICLES_FACTOR * 4)
+            throw_in_particles(s.world, C, N_PARTICLES_FACTOR * 16)
         '''
         if MEMBRANE1 and MEMBRANE2:
             # Add world particles inside the two planes.
             # Note that a CuboidalRegion is defined by 2 corners.
             box1 = CuboidalRegion([0, 0, 2 * L / 10], [L, L, 8 * L / 10])
-            s.throw_in_particles(C, 4, box1)
-            s.throw_in_particles(C, 4, box1)
-            s.throw_in_particles(C, 16, box1)
+            s.throw_in_particles(C, N_PARTICLES_FACTOR * 4, box1)
+            s.throw_in_particles(C, N_PARTICLES_FACTOR * 4, box1)
+            s.throw_in_particles(C, N_PARTICLES_FACTOR * 16, box1)
         '''
 
     if MEMBRANE1:
         if ALTERNATIVE_USER_INTERFACE == True:
-            throw_in(s.world, A, 2, m1)
-            throw_in(s.world, B, 2, m1)
-            throw_in(s.world, C, 8, m1)
+            throw_in(s.world, A, N_PARTICLES_FACTOR * 2, m1)
+            throw_in(s.world, B, N_PARTICLES_FACTOR * 2, m1)
+            throw_in(s.world, C, N_PARTICLES_FACTOR * 8, m1)
         else:
-            throw_in_particles(s.world, Am1, 2)
-            throw_in_particles(s.world, Bm1, 2)
-            throw_in_particles(s.world, Cm1, 8)
+            throw_in_particles(s.world, Am1, N_PARTICLES_FACTOR * 2)
+            throw_in_particles(s.world, Bm1, N_PARTICLES_FACTOR * 2)
+            throw_in_particles(s.world, Cm1, N_PARTICLES_FACTOR * 8)
 
     if MEMBRANE2: pass
 
     if DNA:
         if ALTERNATIVE_USER_INTERFACE == True:
-            throw_in(w, A, 1, d)
-            throw_in(w, B, 1, d)
-            throw_in(w, C, 4, d)
+            throw_in(w, A, N_PARTICLES_FACTOR * 1, d)
+            throw_in(w, B, N_PARTICLES_FACTOR * 1, d)
+            throw_in(w, C, N_PARTICLES_FACTOR * 4, d)
         else:
-            throw_in_particles(s.world, Ad, 1)
-            throw_in_particles(s.world, Bd, 1)
-            throw_in_particles(s.world, Cd, 4)
+            throw_in_particles(s.world, Ad, N_PARTICLES_FACTOR * 1)
+            throw_in_particles(s.world, Bd, N_PARTICLES_FACTOR * 1)
+            throw_in_particles(s.world, Cd, N_PARTICLES_FACTOR * 4)
 
 
     '''Define loggers.
@@ -459,7 +466,7 @@ def run():
     if VTK_LOGGER == True:
         from vtklogger import VTKLogger
         # Write vtk files. See vtklogger.py. Use VTK or Paraview to visualize.  
-        vtklogger = VTKLogger(s, 'run', 100)
+        vtklogger = VTKLogger(s, 'data/run', 100)
 
     if LOGGER == True:
         from logger import Logger
@@ -474,7 +481,7 @@ def run():
 
     '''
     s.initialize()
-    for i in range(1000):
+    for i in range(100):
         try:
             if VTK_LOGGER == True:
                 vtklogger.log()
@@ -483,6 +490,7 @@ def run():
             s.step()
         except Exception, message:
             print 'Exception at step = ', i
+            print message
             if VTK_LOGGER == True:
                 vtklogger.stop()
             s.print_report()

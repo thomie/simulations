@@ -1,4 +1,4 @@
-base_directory = '/storage1/miedema/code/'
+base_directory = '/home/miedema/code/'
 paraview_scripts_directory = base_directory + 'egfrd/visualization/'
 simulation_data_directory = base_directory + 'simulations/example/data/run/'
 
