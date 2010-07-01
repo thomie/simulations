@@ -1,3 +1,6 @@
+#!/usr/bin/python
+# Requirements on Ubuntu: python-sympy or python-mpmath.
+
 # test script to sample a distribution of first-passage times
 #
 # the setup is: one absorbing, one reflecting plane which are parallel. Particles are started
@@ -13,8 +16,10 @@ import time
 import shutil
 
 # gfrd
+from model2 import *
 from egfrd import *
 from logger import *
+import myrandom
 
 # for calculating and sampling
 import numpy as np
@@ -25,11 +30,12 @@ except ImportError:
     import sympy.mpmath as m
 
 
+myrandom.seed(0)
 # settings and parameters for the sampling run
 #
 # files
 # --------------ADAPT THIS!-----------
-DATADIR = '/home/nbecker/data/fp_sampling'
+DATADIR = '/home/miedema/code/simulations/nils/runs/fp_sampling'
 DATAFN = 'sample'
 #
 # outer loop count. each time there are 9 particles running in parallel.
@@ -48,7 +54,8 @@ L = 5e-6
 # slabThickness - 2*stopThickness/2 -2*rA (see below)
 slabThickness = L / 2
 # attention: it seems that Lz is really only half the thickness! centered!
-stopThickness = 2e-8
+# Update: planar surfaces don't have thickness anymore.
+stopThickness = 0
 # sort of standard values for the particles: 1mu^2/s, 10nm size.
 DA = 1e-12
 rA = 1e-8#
@@ -56,7 +63,7 @@ rA = 1e-8#
 kAss = 1e5
 # whether to include a fake species on the plane that decays later. Obsolete since
 # direct absorption is implemented.
-DUMMYDECAY = False  
+DUMMYDECAY = True
 # decay on membrane
 if DUMMYDECAY: kDec = 1e3
 # starting distance
@@ -70,43 +77,50 @@ HISTBINS = 25
 MAKEFIGURE = True
 
 
-def setupSim(l):        
+def setupSim():
     # setting up the simulator; has to be done in each loop to get proper reset.
-    s = EGFRDSimulator(worldSize=L)
-    # logging
-    l.sim = s
+    m = ParticleModel(L)
     # geometry
     #
     # For PlanarSurface, the first argument is the center of mass
     # this is a list of the two surfaces.   
-    stopSurf = dict([(i[1], s.addPlanarSurface(origin=[L / 2, L / 2, L / 2 + i[0] * slabThickness],
-                                vectorX=[1, 0, 0],
-                                vectorY=[0, 1, 0],
+    stopSurf = dict([(i[1], m.add_planar_surface(
+                                id=i[1],
+                                origin=[L / 2, L / 2, L / 2 + i[0] * slabThickness],
+                                unit_x=[1, 0, 0],
+                                unit_y=[0, 1, 0],
                                 Lx=L / 2,
-                                Ly=L / 2,
-                                Lz=stopThickness / 2,
-                                name=i[1])) for i in [(0.5, 'up'), (-0.5, 'down')] ])
+                                Ly=L / 2)) for i in [(0.5, 'up'), (-0.5, 'down')] ])
     # Species
     # create particles in the bulk
     A = Species('A', DA, rA)
-    s.addSpecies(A)           
+    m.add_species(A)
     if DUMMYDECAY:
         for su in stopSurf.itervalues():
-            s.addSpecies(A, su, 0.1 * DA, rA) # the adsorbed species: smaller diffusion constant on membrane
+            m.add_species(A, su, 0.1 * DA, rA) # the adsorbed species: smaller diffusion constant on membrane
     # Reactions
     # absorption only for the last surface, 'down'
     for su in stopSurf['down'], : # ugly but it works
         if DUMMYDECAY:
-            s.addReaction([A], [(A, su)], kAss)
-            s.addReaction([(A, su)], [(0, su)], kDec)
+            m.add_reaction([A], [(A, su)], kAss)
+            m.add_reaction([(A, su)], [], kDec)
         else:
-            s.addReaction([A], [(0, su)], kAss)
+            m.add_reaction([A], [(0, su)], kAss)
+
+    # Create simulator
+    w = create_world(m, matrix_size=3)
+    nrw = NetworkRulesWrapper(m.network_rules)
+    s = EGFRDSimulator(w, myrandom.rng, nrw)
+
     #
     # a grid of 9 particles. by default, they are far enough apart to not generate
     # multis. it may be nice to test those too but that just seems to take too long.
     for i in range(3): 
         for j in range(3):
-            s.placeParticle(A, [L / 3 * j, L / 3 * i, stopSurf['down'].origin[2] + distToAbsorbing ])
+            place(s.world, A, [L / 3 * j, L / 3 * i, stopSurf['down'].shape.position[2] + distToAbsorbing ])
+
+    s.initialize()
+
     return s  
 
 
@@ -130,11 +144,12 @@ def run():
                 s.step()
             # when there are no more particles:
             except RuntimeError, message:
-                print message        
+                print message
                 break
             # in any case:
             finally:
-                 l.logTimeCourse()
+                if s.last_reaction:
+                    l.write_timecourse(s)
             new = s.t
             old = new
     '''
@@ -142,16 +157,20 @@ def run():
     '''
     # outer loop
     ttt = time.time()
-    dummysim = EGFRDSimulator(L)
-    log = Logger(dummysim , DATAFN, DATADIR, 'first passage sampling')
+    l = Logger(DATAFN, DATADIR, 'first passage sampling')
     for i in range(NUMBEROFRUNS):
+        if i % 10 == 0:
+            print i
         try:
-            sim = setupSim(log)
-            onerun(sim, log)
+            sim = setupSim()
+            if i == 0:
+                print sim.dump_reaction_rules()
+                l.prepare_timecourse_file(sim)
+            onerun(sim, l)
             del sim
         except RuntimeError as e:
             print e
-    log.timecourseFile.close()
+    l.timecourse_file.close()
     print time.time() - ttt
 
 
@@ -172,14 +191,16 @@ def logbins(c, n):
     '''
     mi, ma = np.log((min(c), max(c)))
     dm = (ma - mi) / float(n)
-    return np.exp(np.arange(mi, ma, dm)) 
+    # From docstring numpy version 1.3: if `bins` is a sequence, it defines 
+    # the bin edges, including the rightmost edge.
+    return np.exp(np.arange(mi, ma + dm, dm))
 
 
 # take the histogram   
 def makeHist():
     '''take the histogram from the sampled file
     '''
-    hi.timetable = np.loadtxt(DATADIR + os.sep + DATAFN + '_tc.dat', skiprows=3)[:, 0]
+    hi.timetable = np.loadtxt(DATADIR + os.sep + DATAFN + '_tc.dat', skiprows=2)[:, 0]
     hi.timetable.sort()
     hi.cts, hi.bins = np.histogram(hi.timetable, bins=logbins(hi.timetable, HISTBINS))
     # dividing by the bin widths to get the right pdf
