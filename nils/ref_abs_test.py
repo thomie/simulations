@@ -1,6 +1,3 @@
-#!/usr/bin/python
-# Requirements on Ubuntu: python-sympy or python-mpmath.
-
 # test script to sample a distribution of first-passage times
 #
 # the setup is: one absorbing, one reflecting plane which are parallel. Particles are started
@@ -32,12 +29,12 @@ except ImportError:
 #
 # files
 # --------------ADAPT THIS!-----------
-DATADIR='/home/thomas/code/runs/fp_sampling'
-DATAFN='sample'
+DATADIR = '/home/nbecker/data/fp_sampling'
+DATAFN = 'sample'
 #
 # outer loop count. each time there are 9 particles running in parallel.
 # therefore, the total number of counts in the histogram is about 9*NUMEROFRUNS
-NUMBEROFRUNS = int(1e3)
+NUMBEROFRUNS = int(1e2)
 #
 # upper cutoff time for sampling: if a particle stays alive longer than this time, 
 # it is discarded
@@ -133,7 +130,7 @@ def run():
                 s.step()
             # when there are no more particles:
             except RuntimeError, message:
-                #print message        
+                print message        
                 break
             # in any case:
             finally:
@@ -148,8 +145,6 @@ def run():
     dummysim = EGFRDSimulator(L)
     log = Logger(dummysim , DATAFN, DATADIR, 'first passage sampling')
     for i in range(NUMBEROFRUNS):
-        if i % 10 == 0:
-            print i
         try:
             sim = setupSim(log)
             onerun(sim, log)
