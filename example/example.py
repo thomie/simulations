@@ -2,10 +2,10 @@
 
 '''
 To run this script:
-PYTHONPATH=../../../ python example.py
+PYTHONPATH=../../ python features.py
 
 or, without terminal output and faster:
-PYTHONPATH=../../../ python -O example.py
+PYTHONPATH=../../../ python -O features.py
 '''
 
 from egfrd import *
@@ -24,35 +24,35 @@ C      -> 0
 '''Switch all toggles down.
 
 '''
-EGFRD_MODEL                 = None
-WORLD                       = None
-MEMBRANE1                   = None
-MEMBRANE2                   = None
-DNA                         = None
-BOX                         = None
-REACTIONS                   = None
-DECAY                       = None
-SURFACE_BINDING_REACTIONS   = None
-SURFACE_UNBINDING_REACTIONS = None
-LOGGER                      = None
-VTK_LOGGER                  = None
+EGFRD_MODEL                  = None
+WORLD                        = None
+MEMBRANE1                    = None
+MEMBRANE2                    = None
+DNA                          = None
+BOX                          = None
+REACTIONS                    = None
+DECAY                        = None
+SURFACE_BINDING_INTERACTIONS = None
+SURFACE_UNBINDING_REACTIONS  = None
+LOGGER                       = None
+VTK_LOGGER                   = None
 
 
 '''Toggles.
 
 '''
-EGFRD_MODEL                 = True
-WORLD                       = True
-#MEMBRANE1                   = True
-#MEMBRANE2                   = True # Todo. But first fix interactions.
-#DNA                         = True
-#BOX                         = True
-REACTIONS                   = True
-#DECAY                       = True
-#SURFACE_BINDING_REACTIONS   = True
-#SURFACE_UNBINDING_REACTIONS = True
-#LOGGER                      = True # Todo.
-#VTK_LOGGER                  = True
+EGFRD_MODEL                  = True
+WORLD                        = True
+MEMBRANE1                    = True
+MEMBRANE2                    = True
+DNA                          = True
+BOX                          = True
+REACTIONS                    = True
+DECAY                        = True
+#SURFACE_BINDING_INTERACTIONS = True
+#SURFACE_UNBINDING_REACTIONS  = True
+#LOGGER                       = True
+#VTK_LOGGER                   = True
 
 
 '''Settings
@@ -66,7 +66,7 @@ PAIR_RATE_FACTOR   = 1
 N_PARTICLES_FACTOR = 1
 WORLD_SIZE_FACTOR  = 1
 
-N_STEPS = 1000
+N_STEPS = 15000
 
 MY_SEED = 0
 myrandom.seed(MY_SEED)
@@ -88,7 +88,8 @@ kf_2 = PAIR_RATE_FACTOR * 100 * sigma * D_tot
 kb_2 = PAIR_RATE_FACTOR * 0.1 / tau
 kf_1 = SINGLE_RATE_FACTOR * 0.1 / tau
 kb_1 = SINGLE_RATE_FACTOR * 0.1 / tau
-# Surface binding reaction (molecule + surface).
+
+# Surface binding interaction (molecule + surface).
 kon = kf_2
 # Surface unbinding reaction (unimolecular).
 koff = kb_1
@@ -140,7 +141,7 @@ if EGFRD_MODEL == True:
     '''
     A = ParticleType('A', D, radius)
     B = ParticleType('B', D, radius)
-    C = ParticleType('C', D, radius)
+    C = ParticleType('C', D, 2 * radius)
 
 
     '''Add ParticleTypes (to specific Regions or Surfaces).
@@ -209,21 +210,21 @@ if EGFRD_MODEL == True:
             m.add_reaction_rule((C, d), [], kf_1)
 
 
-    '''Add surface binding reaction rules.
+    '''Add surface binding interaction rules.
 
     '''
-    if SURFACE_BINDING_REACTIONS and MEMBRANE1 and BOX:
+    if SURFACE_BINDING_INTERACTIONS and MEMBRANE1 and BOX:
         # ParticleType C can bind from the box to membrane1. The 
         # membrane is reflective, by default, to ParticleTypes A and B.
         m.add_reaction_rule((C, b), (C, m1), kon)
 
-    if SURFACE_BINDING_REACTIONS and MEMBRANE2 and BOX:
+    if SURFACE_BINDING_INTERACTIONS and MEMBRANE2 and BOX:
         # Membrane 2 absorbs all particles.
         m.add_reaction_rule((A, b), (0, m2), kon)
         m.add_reaction_rule((B, b), (0, m2), kon)
         m.add_reaction_rule((C, b), (0, m2), kon)
 
-    if SURFACE_BINDING_REACTIONS and DNA and BOX:
+    if SURFACE_BINDING_INTERACTIONS and DNA and BOX:
         # ParticleType C can bind from the box to the dna. The dna is 
         # reflective, by default, to ParticleTypes A and B.
         m.add_reaction_rule((C, b), (C, d), kon)
@@ -396,7 +397,7 @@ else:
             m.network_rules.add_reaction_rule(r5)
 
 
-    '''Add surface binding reaction rules.
+    '''Add surface binding interaction rules.
 
     TODO
     '''
