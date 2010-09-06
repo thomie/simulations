@@ -13,8 +13,8 @@ import math
 
 
 LOGGER = False
-INTERVAL = 6
-CPU_SECONDS = 1800
+INTERVAL = 1 #6
+CPU_SECONDS = 10 #1800
 
 V = 1e-15
 D_ratio = 1
@@ -39,12 +39,14 @@ if simulator == 'gfrd':
     w = World(L, matrixSize)
     s = EGFRDSimulator(w)
     dataDirectory = 'gfrd-'
+    no_shells = False
 elif simulator == 'bd':
     from bd import *
     w = World(L, matrixSize)
     s = BDSimulator(w)
     #s.core.dtFactor = DEFAULT_DT_FACTOR
     dataDirectory = 'bd-'
+    no_shells = True
 
 dataDirectory += str(CPU_SECONDS) + '_cpu_s-' + str(KK_VS_P) + '_kk_vs_p'
 
@@ -187,7 +189,7 @@ m.network_rules.add_reaction_rule( r14 )
 s.setModel(m)
 
 
-vtklogger = VTKLogger(s, dataDirectory, bufferSize=None, no_shells=True, 
+vtklogger = VTKLogger(s, dataDirectory, bufferSize=None, no_shells=no_shells, 
                       extraParticleStep=False, color_dict=color_dict)
 
 
