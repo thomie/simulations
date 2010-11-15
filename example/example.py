@@ -42,10 +42,10 @@ VTK_LOGGER                   = None
 
 '''
 WORLD                        = True
-MEMBRANE1                    = True
-MEMBRANE2                    = True
-DNA                          = True
-BOX                          = True
+#MEMBRANE1                    = True
+#MEMBRANE2                    = True
+#DNA                          = True
+#BOX                          = True
 REACTIONS                    = True
 DECAY                        = True
 #SURFACE_BINDING_INTERACTIONS = True
@@ -178,6 +178,23 @@ if DNA:
     m.add_species_type(Cd)
 
 
+'''Define simulator.
+
+A cube of dimension (L x L x L) is created, with periodic boundary 
+conditions.
+
+'''
+matrix_size = 3
+w = create_world(m, matrix_size)
+s = EGFRDSimulator(w)
+s.bd_dt_factor = BD_DT_FACTOR
+
+
+'''Stir (optional).
+
+'''
+
+
 '''Add reaction rules.
 
 '''
@@ -252,18 +269,6 @@ if REACTIONS and DNA:
     if DECAY:
         r5 = create_decay_reaction_rule(Cd, kf_1)
         m.network_rules.add_reaction_rule(r5)
-
-
-'''Define simulator.
-
-A cube of dimension (L x L x L) is created, with periodic boundary 
-conditions.
-
-'''
-matrix_size = 3
-w = create_world(m, matrix_size)
-s = EGFRDSimulator(w)
-s.bd_dt_factor = BD_DT_FACTOR
 
 
 '''Add particles.
