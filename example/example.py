@@ -41,17 +41,17 @@ VTK_LOGGER                   = None
 '''Toggles.
 
 '''
-WORLD                        = True
+#WORLD                        = True
 #MEMBRANE1                    = True
 #MEMBRANE2                    = True
-#DNA                          = True
+DNA                          = True
 #BOX                          = True
-REACTIONS                    = True
-DECAY                        = True
+#REACTIONS                    = True
+#DECAY                        = True
 #SURFACE_BINDING_INTERACTIONS = True
 #SURFACE_UNBINDING_REACTIONS  = True
 #LOGGER                       = True
-#VTK_LOGGER                   = True
+VTK_LOGGER                   = True
 
 
 '''Settings
@@ -62,16 +62,17 @@ BD_DT_FACTOR       = 1
 RADIUS_FACTOR      = 1
 SINGLE_RATE_FACTOR = 1
 PAIR_RATE_FACTOR   = 1
-N_PARTICLES_FACTOR = 1
-WORLD_SIZE_FACTOR  = 1
+N_PARTICLES_FACTOR = 0.3
+WORLD_SIZE_FACTOR  = 2
 
-N_STEPS = 15000
+N_STEPS = 200
 
 MY_SEED = 0
 myrandom.seed(MY_SEED)
 
 L = WORLD_SIZE_FACTOR * 1e-6    # Size of simulation box.
 D = 1e-12                       # Diffusion constant.
+v = 0 # drift
 radius = RADIUS_FACTOR * 2.5e-9 # Radius of particles.
 
 
@@ -170,9 +171,9 @@ if MEMBRANE2:
     pass
 
 if DNA:
-    Ad = Species('Ad', D, radius, d.id)
-    Bd = Species('Bd', D, radius, d.id)
-    Cd = Species('Cd', D, radius, d.id)
+    Ad = Species('Ad', D, radius, d.id, v)
+    Bd = Species('Bd', D, radius, d.id, v)
+    Cd = Species('Cd', D, radius, d.id, v)
     m.add_species_type(Ad)
     m.add_species_type(Bd)
     m.add_species_type(Cd)

@@ -14,8 +14,12 @@ import math
 
 
 LOGGER = False
-INTERVAL = 6
-CPU_SECONDS = 1800
+
+# First 1000 frames (50s) of slow motion (zooming out).
+INTERVAL_SIMULATION_TIME = 0.000001
+TOTAL_SIMULATION_TIME = 0.001
+INITIAL_SIMULATION_TIME = 0
+INITIAL_VTK_STEP = 0
 
 V = 1e-15
 D_ratio = 1
@@ -38,7 +42,7 @@ matrixSize = min(max(3, int((3 * N) ** (1.0/3.0))), 60)
 if simulator == 'gfrd':
     from egfrd import *
     dataDirectory = 'gfrd-'
-    show_shells = False
+    show_shells = True
 elif simulator == 'bd':
     from bd import *
     w = World(L, matrixSize)
@@ -47,8 +51,8 @@ elif simulator == 'bd':
     dataDirectory = 'bd-'
     show_shells = False
 
-dataDirectory += str(CPU_SECONDS) + '_cpu_s-' + str(KK_VS_P) + '_kk_vs_p'
-
+dataDirectory += str(TOTAL_SIMULATION_TIME) + '_s-' + str(INTERVAL_SIMULATION_TIME) + '_s_intervals-' + str(KK_VS_P) + '_kk_vs_p-zoomout'
+#str(CPU_SECONDS) + '_cpu_s-' 
 
 
 model='mapk3'
@@ -136,12 +140,19 @@ sigma = radius * 2
 kD = k_D(D_react * 2, sigma)
 
 N_K = C2N(200e-9, V) 
+N_Kpp = 0
+
+#N_K = 0
+#N_Kpp = C2N(200e-9, V) 
+
 N_KK = KK_VS_P * 2 * C2N(50e-9, V)
 N_P = (1 - KK_VS_P) * 2 * C2N(50e-9, V)
 
 
 throw_in_particles(s.world, K, N_K)
 print 'Number of K =', N_K
+throw_in_particles(s.world, Kpp, N_Kpp)
+print 'Number of Kpp =', N_Kpp
 throw_in_particles(s.world, KK, N_KK)
 print 'Number of KK =', N_KK
 throw_in_particles(s.world, P, N_P)
@@ -224,18 +235,28 @@ if LOGGER == True:
 
 
 counter = 0
+next_simulation_time = INITIAL_SIMULATION_TIME
 
-currentTime = time.clock()
-nextTime = currentTime
-endTime = currentTime + CPU_SECONDS
+s.t = INITIAL_SIMULATION_TIME
+vtklogger.i = INITIAL_VTK_STEP
 
-while currentTime < endTime:
-    if feq(nextTime, currentTime) == True:
+while s.t <= INITIAL_SIMULATION_TIME + TOTAL_SIMULATION_TIME +  INTERVAL_SIMULATION_TIME:
+    if s.t > next_simulation_time:
         counter += 1
-        nextTime = nextTime + INTERVAL
+        interval= INTERVAL_SIMULATION_TIME
+
+        '''
+        if s.t > TOTAL_SIMULATION_TIME1:
+            interval = INTERVAL_SIMULATION_TIME1 * pow(INTERVAL_SIMULATION_FACTOR, (counter - 600))
+        else:
+            interval= INTERVAL_SIMULATION_TIME1 
+        '''
+
+        print '%d %f %f' % (counter, interval, next_simulation_time)
+
+        next_simulation_time += interval
         vtklogger.log()
     s.step()
-    currentTime = time.clock()
 
     if LOGGER == True:
         if s.lastReaction:
